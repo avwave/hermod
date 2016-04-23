@@ -3,6 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+const request = require('request');
 
 const router = express.Router();
 
@@ -18,15 +19,38 @@ router.get('/__message_deliveries', (request, response) => {
   }
 });
 
+const token = "CAAHladUiTLcBAGQkxg7JvJ32HPBmZCgnUEiAcTZA6pRDVay5jnQDnWCF2gAcZASn3w9xUNJAAAcZADDmMLLTpyBtOWZArMZAt4mU1hhGp4W4a5ugt4ZBzX9LErskvtHG3wBIB96nrI0n8OkOeUtC529KsElDcE8memsMiiyfCcVyfWClYHZCZAuRvqJmnTZAwzI88ZD";
+
+function sendTextMessage(sender, text) {
+  let messageData = {
+    text
+  };
+  request({
+    url: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: {access_token: token},
+    method: 'POST',
+    json: {
+      recipient: {id: sender},
+      message: 'Echo: ' + messageData,
+    }
+  }, (error, response, body) => {
+    if (error) {
+      console.log('Error sending message: ', error);
+    } else if (response.body.error) {
+      console.log('Error: ', response.body.error);
+    }
+  });
+}
+
 app.post('/message_deliveries', bodyParser.json(), (req, res) => {
   const messaging_events = req.body.entry[0].messaging;
-  for (i = 0; i < messaging_events.length; i++) {
+  for (let i = 0; i < messaging_events.length; i++) {
     const event = req.body.entry[0].messaging[i];
     const sender = event.sender.id;
     if (event.message && event.message.text) {
       const text = event.message.text;
       console.dir(text);
-      // Handle a text message from this sender
+      sendTextMessage(sender, text)
     }
   }
   res.sendStatus(200);
