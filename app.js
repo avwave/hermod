@@ -45,40 +45,47 @@ var sendTextMessage = (sender, text) => {
 
 
 var sendCats = (sender, text) => {
-    var imageURL = "thecatapi.com/api/images/get?format=src&dog=" + Math.floor((Math.random() * 10) + 1);
-    const messageData = {
-    "attachment": {
-      "type": "template",
-      "payload": {
-        "template_type": "generic",
-        "elements": [{
-          "title": "Meow",
-          "subtitle": "Meow meow, meow-meow",
-          "image_url": imageURL,
-          "buttons": [{
-            "type": "web_url",
-            "url": "thecatapi.com",
-            "title": "Web url"
-          }]
-        }]
-      }
-    }
-  };
-  request({
-    url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token: token},
-    method: 'POST',
-    json: {
-      recipient: {id: sender},
-      message: messageData
-    }
-  }, (error, response, body) => {
-    if (error) {
-      console.log('Error sending message: ', error);
-    } else if (response.body.error) {
-      console.log('Error: ', response.body.error);
-    }
-  });
+  request
+    .get('http://thecatapi.com/api/images/get?format=xml', (error, response, body) => {
+
+      let catUrl = '';
+      parseString(response.body, {explicitArray: false}, (error,  result) =>{
+        catUrl = result.response.data.images.image.url;
+        let messageData = {
+          "attachment": {
+            "type": "template",
+            "payload": {
+              "template_type": "generic",
+              "elements": [{
+                "title": "Meow",
+                "subtitle": "Meow meow, meow-meow",
+                "image_url": catUrl,
+                "buttons": [{
+                  "type": "web_url",
+                  "url": "thecatapi.com",
+                  "title": "Web url"
+                }]
+              }]
+            }
+          }
+        };
+        request({
+          url: 'https://graph.facebook.com/v2.6/me/messages',
+          qs: {access_token: token},
+          method: 'POST',
+          json: {
+            recipient: {id: sender},
+            message: messageData
+          }
+        }, (error, response, body) => {
+          if (error) {
+            console.log('Error sending message: ', error);
+          } else if (response.body.error) {
+            console.log('Error: ', response.body.error);
+          }
+        });
+      });
+    });
 };
 
 
