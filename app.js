@@ -42,8 +42,10 @@ var sendTextMessage = (sender, text) => {
   });
 };
 
+
 var sendCats = (sender, text) => {
-  const messageData = {
+    var imageURL = "http://thecatapi.com/api/images/get?r=" + Math.floor((Math.random() * 10) + 1);
+    const messageData = {
     "attachment": {
       "type": "template",
       "payload": {
@@ -51,7 +53,7 @@ var sendCats = (sender, text) => {
         "elements": [{
           "title": "Meow",
           "subtitle": "Meow meow, meow-meow",
-          "image_url": "thecatapi.com/api/images/get",
+          "image_url": imageURL,
           "buttons": [{
             "type": "web_url",
             "url": "thecatapi.com",
