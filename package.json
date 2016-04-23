@@ -1,0 +1,7 @@
+{
+  "name": "Hermod",
+  "version": "0.0.1",
+  "dependencies": {
+    "fb-messenger": "^0.1.3"
+  }
+}
