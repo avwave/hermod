@@ -11,14 +11,14 @@ router.use((request, response, next) => {
   next();
 });
 
-router.get('/message_deliveries', (request, response) => {
+router.get('/__message_deliveries', (request, response) => {
   const url_parts = url.parse(request.url, true);
   if (url_parts.query['hub.verify_token'] === 'a-stray-dog-starved-for-dreams-howls-tonight') {
     response.send(url_parts.query['hub.challenge']);
   }
 });
 
-app.post('/webhook/', bodyParser.json(), (req, res) => {
+app.post('/message_deliveries', bodyParser.json(), (req, res) => {
   const messaging_events = req.body.entry[0].messaging;
   for (i = 0; i < messaging_events.length; i++) {
     const event = req.body.entry[0].messaging[i];
