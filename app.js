@@ -21,9 +21,9 @@ router.get('/__message_deliveries', (request, response) => {
 
 const token = "CAAHladUiTLcBAGQkxg7JvJ32HPBmZCgnUEiAcTZA6pRDVay5jnQDnWCF2gAcZASn3w9xUNJAAAcZADDmMLLTpyBtOWZArMZAt4mU1hhGp4W4a5ugt4ZBzX9LErskvtHG3wBIB96nrI0n8OkOeUtC529KsElDcE8memsMiiyfCcVyfWClYHZCZAuRvqJmnTZAwzI88ZD";
 
-function sendTextMessage(sender, text) {
-  let messageData = {
-    text: 'echo: ' + text
+var sendTextMessage = (sender, text) => {
+  const messageData = {
+    text: `echo: ${text}`
   };
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
@@ -40,7 +40,44 @@ function sendTextMessage(sender, text) {
       console.log('Error: ', response.body.error);
     }
   });
-}
+};
+
+var sendCats = (sender, text) => {
+  const messageData = {
+    "attachment": {
+      "type": "template",
+      "payload": {
+        "template_type": "generic",
+        "elements": [{
+          "title": "Meow",
+          "subtitle": "Meow meow, meow-meow",
+          "image_url": "thecatapi.com/api/images/get",
+          "buttons": [{
+            "type": "web_url",
+            "url": "thecatapi.com",
+            "title": "Web url"
+          }]
+        }]
+      }
+    }
+  };
+  request({
+    url: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: {access_token: token},
+    method: 'POST',
+    json: {
+      recipient: {id: sender},
+      message: messageData
+    }
+  }, (error, response, body) => {
+    if (error) {
+      console.log('Error sending message: ', error);
+    } else if (response.body.error) {
+      console.log('Error: ', response.body.error);
+    }
+  });
+};
+
 
 app.post('/message_deliveries', bodyParser.json(), (req, res) => {
   const messaging_events = req.body.entry[0].messaging;
@@ -50,7 +87,11 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
     if (event.message && event.message.text) {
       const text = event.message.text;
       console.dir(text);
-      sendTextMessage(sender, text)
+      if (text === 'cat pls') {
+        sendCats(sender, text)
+      } else {
+        sendTextMessage(sender, text)
+      }
     }
   }
   res.sendStatus(200);
