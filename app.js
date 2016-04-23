@@ -44,7 +44,7 @@ var sendTextMessage = (sender, text) => {
 
 
 var sendCats = (sender, text) => {
-    var imageURL = "http://thecatapi.com/api/images/get?r=" + Math.floor((Math.random() * 10) + 1);
+    var imageURL = "thecatapi.com/api/images/get?format=src&dog=" + Math.floor((Math.random() * 10) + 1);
     const messageData = {
     "attachment": {
       "type": "template",
