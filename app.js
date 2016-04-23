@@ -23,7 +23,7 @@ const token = "CAAHladUiTLcBAGQkxg7JvJ32HPBmZCgnUEiAcTZA6pRDVay5jnQDnWCF2gAcZASn
 
 function sendTextMessage(sender, text) {
   let messageData = {
-    text
+    text: 'echo: ' + text
   };
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
@@ -31,7 +31,7 @@ function sendTextMessage(sender, text) {
     method: 'POST',
     json: {
       recipient: {id: sender},
-      message: 'Echo: ' + messageData,
+      message: messageData
     }
   }, (error, response, body) => {
     if (error) {
