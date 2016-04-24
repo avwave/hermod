@@ -57,14 +57,7 @@ var sendCats = (sender, text) => {
             "payload": {
               "template_type": "generic",
               "elements": [{
-                "title": "Meow",
-                "subtitle": "Meow meow, meow-meow",
                 "image_url": catUrl,
-                "buttons": [{
-                  "type": "web_url",
-                  "url": "thecatapi.com",
-                  "title": "Web url"
-                }]
               }]
             }
           }
@@ -90,17 +83,19 @@ var sendCats = (sender, text) => {
 
 
 app.post('/message_deliveries', bodyParser.json(), (req, res) => {
-  const messaging_events = req.body.entry[0].messaging;
-  for (let i = 0; i < messaging_events.length; i++) {
-    const event = req.body.entry[0].messaging[i];
-    const sender = event.sender.id;
-    if (event.message && event.message.text) {
-      const text = event.message.text;
-      console.dir(text);
-      if (text === 'cat pls') {
-        sendCats(sender, text)
-      } else {
-        sendTextMessage(sender, text)
+  for (let entry of req.body.entry) {
+    const messaging_events = entry.messaging;
+    for (let messaging_event of messaging_events) {
+      const event = messaging_event;
+      const sender = event.sender.id;
+      if (event.message && event.message.text) {
+        const text = event.message.text;
+        console.dir(text);
+        if (text === 'cat pls') {
+          sendCats(sender, text)
+        } else {
+          sendTextMessage(sender, text)
+        }
       }
     }
   }
