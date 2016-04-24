@@ -6,6 +6,7 @@
     "express": "^4.13.4",
     "fb-messenger": "^0.1.3",
     "request": "^2.72.0",
+    "wolfram": "^0.3.2",
     "xml2js": "^0.4.16"
   }
 }

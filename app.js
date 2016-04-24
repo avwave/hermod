@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const request = require('request');
 const parseString = require('xml2js').parseString;
+const wolfram = require('wolfram').createClient('XWG4W2-HWVP2RXRTH');
 
 const router = express.Router();
 
@@ -41,6 +42,30 @@ var sendTextMessage = (sender, text) => {
       console.log('Error: ', response.body.error);
     }
   });
+};
+
+var ask_wolfram = (sender, text) => {
+  wolfram.query(text,  (error, result) => {
+    if (error) throw error
+    request({
+      url: 'https://graph.facebook.com/v2.6/me/messages',
+      qs: {access_token: token},
+      method: 'POST',
+      json: {
+        recipient: {id: sender},
+        message: {
+          text: result
+        }
+      }
+    }, (error, response, body) => {
+      if (error) {
+        console.log('Error sending message: ', error);
+      } else if (response.body.error) {
+        console.log('Error: ', response.body.error);
+      }
+    });
+  });
+
 };
 
 
@@ -94,7 +119,8 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
         if (text === 'cat pls') {
           sendCats(sender, text)
         } else {
-          sendTextMessage(sender, text)
+          // sendTextMessage(sender, text)
+          ask_wolfram(sender,  text)
         }
       }
     }
