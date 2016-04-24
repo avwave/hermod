@@ -7,6 +7,8 @@ const request = require('request');
 const parseString = require('xml2js').parseString;
 const wolfram = require('wolfram').createClient('XWG4W2-HWVP2RXRTH');
 
+const _ = require('lodash')
+
 const router = express.Router();
 
 router.use((request, response, next) => {
@@ -47,6 +49,12 @@ var sendTextMessage = (sender, text) => {
 var ask_wolfram = (sender, text) => {
   wolfram.query(text,  (error, result) => {
     if (error) throw error
+    let primary_result = _.find(result, ['primary', true])
+    let answer = "I don't know, sorry";
+    if (primary_result) {
+      answer = primary_result.subpods[0].value
+    }
+
     request({
       url: 'https://graph.facebook.com/v2.6/me/messages',
       qs: {access_token: token},
@@ -54,7 +62,7 @@ var ask_wolfram = (sender, text) => {
       json: {
         recipient: {id: sender},
         message: {
-          text: result
+          text: answer
         }
       }
     }, (error, response, body) => {
@@ -128,8 +136,9 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
   res.sendStatus(200);
 });
 
-router.get('/cat', (req, res) => {
-  sendCats();
+router.post('/brain', bodyParser.json(), (req, res) => {
+  console.dir(req.body.question)
+  ask_wolfram('', req.body.question)
 });
 
 app.use('/', router);
