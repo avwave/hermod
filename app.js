@@ -1,15 +1,18 @@
 "use strict";
+var config = require('./config.js');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const request = require('request');
 const parseString = require('xml2js').parseString;
-const wolfram = require('wolfram').createClient('XWG4W2-HWVP2RXRTH');
+const wolfram = require('wolfram').createClient(config.wolfram_app_key);
 
-const _ = require('lodash')
+const _ = require('lodash');
 
 const router = express.Router();
+
+var db = require('./camo_db.js')
 
 router.use((request, response, next) => {
   console.log(request.method, request.url);
@@ -23,7 +26,7 @@ router.get('/__message_deliveries', (request, response) => {
   }
 });
 
-const token = "CAAHladUiTLcBAGQkxg7JvJ32HPBmZCgnUEiAcTZA6pRDVay5jnQDnWCF2gAcZASn3w9xUNJAAAcZADDmMLLTpyBtOWZArMZAt4mU1hhGp4W4a5ugt4ZBzX9LErskvtHG3wBIB96nrI0n8OkOeUtC529KsElDcE8memsMiiyfCcVyfWClYHZCZAuRvqJmnTZAwzI88ZD";
+const token = config.access_token;
 
 var sendTextMessage = (sender, text) => {
   const messageData = {
@@ -121,6 +124,7 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
     for (let messaging_event of messaging_events) {
       const event = messaging_event;
       const sender = event.sender.id;
+      db.addUser(sender);
       if (event.message && event.message.text) {
         const text = event.message.text;
         console.dir(text);
@@ -137,11 +141,11 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
 });
 
 router.post('/brain', bodyParser.json(), (req, res) => {
-  console.dir(req.body.question)
-  ask_wolfram('', req.body.question)
+  res.sendStatus(200);
 });
 
 app.use('/', router);
 
 app.listen(5050);
 console.log("Server is listening");
+
