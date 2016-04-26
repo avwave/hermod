@@ -94,6 +94,7 @@ var sendCats = (sender, text) => {
               "template_type": "generic",
               "elements": [{
                 "image_url": catUrl,
+                "title": "Cat",
               }]
             }
           }
