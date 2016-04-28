@@ -1,64 +1,26 @@
 "use strict";
 
 var config = require('./config.js');
+var Sequelize = require('Sequelize');
+var db = new Sequelize(config.dburi);
 
-const connect = require('camo').connect;
-const Document = require('camo').Document;
-var database;
-
-
-class User extends (Document) {
-  constructor() {
-    super();
-    this.messengerId = {
-      type: String
-    };
-    this.firstEncounter = {
-      type: Date,
-      default: new Date()
-    };
-    this.lastEncounter = {
-      type: Date
-    };
+var User = db.define('user', {
+  fbUserId: {
+    type: Sequelize.STRING
+  },
+  firstEncounter: {
+    type: Sequelize.DATE
+  },
+  lastEncounter: {
+    type: Sequelize.DATE
   }
-
-  preSave() {
-    console.dir(this)
-    if (!this.firstEncounter) {
-      this.firstEncounter = new Date()
-    }
-  }
-
-  static collectionName() {
-    return 'user';
-  }
-}
-
-
-connect(config.dburi).then((db)=> {
-  database = db;
+}, {
+  freezeTableName: true
 });
 
-var addUser = (fbUserId) => {
-  var userObj = {
-    messengerId: fbUserId,
-    lastEncounter: new Date()
-  };
+User.sync({force:true}).then( () => {
+  console.log('User table created');
+});
 
-  User.findOne({messengerId: fbUserId}).then(u=>{
-    if (!u) {
-      console.log('creating user');
-      let user = User.create(userObj);
-      user.save()
-    } else {
-      console.log('updating user');
-      u.lastEncounter = new Date();
-      u.save();
-    }
-  });
 
-};
-
-module.exports.db = database;
 module.exports.User = User;
-module.exports.addUser = addUser;

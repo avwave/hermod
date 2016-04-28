@@ -6,13 +6,14 @@ const bodyParser = require('body-parser');
 const app = express();
 const request = require('request');
 const parseString = require('xml2js').parseString;
-const wolfram = require('wolfram').createClient(config.wolfram_app_key);
+const WolframClient = require('node-wolfram');
+const Wolfram = new WolframClient(config.wolfram_app_key);
+
+const User = require('./camo_db').User;
 
 const _ = require('lodash');
 
 const router = express.Router();
-
-var db = require('./camo_db.js')
 
 router.use((request, response, next) => {
   console.log(request.method, request.url);
@@ -50,13 +51,15 @@ var sendTextMessage = (sender, text) => {
 };
 
 var ask_wolfram = (sender, text) => {
-  wolfram.query(text,  (error, result) => {
+  Wolfram.query(text,  (error, result) => {
     if (error) throw error
-    let primary_result = _.find(result, ['primary', true])
+    let primary_result = _.find(result.queryresult.pod, ['$.title', 'Result'])
     let answer = "I don't know, sorry";
     if (primary_result) {
-      answer = primary_result.subpods[0].value
+      answer = _.join(_.map(primary_result.subpod, 'plaintext'), ',')
     }
+    console.dir(primary_result);
+    console.dir(answer);
 
     request({
       url: 'https://graph.facebook.com/v2.6/me/messages',
@@ -124,7 +127,7 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
     for (let messaging_event of messaging_events) {
       const event = messaging_event;
       const sender = event.sender.id;
-      db.addUser(sender);
+      
       if (event.message && event.message.text) {
         const text = event.message.text;
         console.dir(text);
@@ -141,6 +144,7 @@ app.post('/message_deliveries', bodyParser.json(), (req, res) => {
 });
 
 router.post('/brain', bodyParser.json(), (req, res) => {
+  ask_wolfram(null, "highest mountain in the philippines?");
   res.sendStatus(200);
 });
 
